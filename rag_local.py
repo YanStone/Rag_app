@@ -42,7 +42,8 @@ def create_graph(vectorstore):
     # qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
     # return qa_chain
 
-    llm = OllamaLLM(model="mistral")
+    llm = OllamaLLM(model="mistral:instruct-q4")
+    # llm = OllamaLLM(model="mistral")
 
     # prompt = hub.pull("rlm/rag-prompt")
 
