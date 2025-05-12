@@ -1,0 +1,7 @@
+streamlit
+langchain_community
+langchain_huggingface
+langchain_ollama
+langgraph
+pymupdf
+python-dotenv

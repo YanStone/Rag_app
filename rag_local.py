@@ -20,7 +20,18 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage
+
+from langchain_huggingface import HuggingFaceEndpoint
+
+from dotenv import load_dotenv
+import os
+
+
+local_llm = False
+
+load_dotenv()
+api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 
 def load_and_split(path):
@@ -42,20 +53,38 @@ def create_graph(vectorstore):
     # qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
     # return qa_chain
 
-    llm = OllamaLLM(model="mistral:instruct-q4")
-    # llm = OllamaLLM(model="mistral")
+    # llm = OllamaLLM(model="mistral:instruct-q4")
+
+    if local_llm:
+        llm = OllamaLLM(model="mistral")
+    else:
+        llm = HuggingFaceEndpoint(
+        repo_id="mistralai/Mistral-7B-Instruct-v0.3",
+        task="text-generation",
+        huggingfacehub_api_token=api_token
+    )
 
     # prompt = hub.pull("rlm/rag-prompt")
 
+    # prompt = ChatPromptTemplate.from_messages([
+    # SystemMessagePromptTemplate.from_template(
+    #     "You are a helpful assistant that answers questions based on context extracted from documents. "
+    #     "Use only the context provided. If the answer cannot be found, say 'I don't know'."
+    # ),
+    # HumanMessagePromptTemplate.from_template("Context:\n{context}"),
+    # MessagesPlaceholder(variable_name="messages"), ])
+
     prompt = ChatPromptTemplate.from_messages([
-    SystemMessagePromptTemplate.from_template(
-        "You are a helpful assistant that answers questions based on context extracted from documents. "
-        "Use only the context provided. If the answer cannot be found, say 'I don't know'."
-    ),
-    HumanMessagePromptTemplate.from_template("Context:\n{context}"),
-    MessagesPlaceholder(variable_name="messages"),
-    # HumanMessagePromptTemplate.from_template("Answer the last question using only the context above.")
-])
+        SystemMessage(content=(
+            "You are a helpful assistant that answers questions based on context extracted from documents. "
+            "You will receive the previous messages (there might be none), the context and then the question. Answer directly with your answer. If the answer cannot be found, say 'I don't know'."
+        )),
+        MessagesPlaceholder(variable_name="messages"),
+        HumanMessagePromptTemplate.from_template(
+            "Context:\n{context}\nQuestion: {question} \nAnswer:"
+        ),
+    ])
+
 
 
     # prompt = PromptTemplate.from_template(prompt_template)
@@ -107,7 +136,8 @@ def create_graph(vectorstore):
         
         # messages = prompt.invoke({"question": state["messages"][-1].text(), "context": docs_content})
         prompt_input = prompt.invoke({
-                "messages": state["messages"],
+                "messages": state["messages"][:-1],
+                "question": state["messages"][-1].text(),
                 "context": docs_content,
         })        
         response = llm.invoke(prompt_input)
