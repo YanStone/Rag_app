@@ -46,6 +46,7 @@ def load_and_split(path):
 def create_vectorstore(chunks):
     print("create vectorstore")
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    print("embeddings created")
     vectorstore = FAISS.from_documents(chunks, embeddings)
     return vectorstore
 
