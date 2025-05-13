@@ -55,14 +55,13 @@ def create_graph(vectorstore):
 
     # llm = OllamaLLM(model="mistral:instruct-q4")
 
-    if local_llm:
-        llm = OllamaLLM(model="mistral")
-    else:
-        llm = HuggingFaceEndpoint(
-        repo_id="mistralai/Mistral-7B-Instruct-v0.3",
-        task="text-generation",
-        huggingfacehub_api_token=api_token
-    )
+    # if local_llm:
+    #     llm = OllamaLLM(model="mistral")
+    # else:
+    llm = HuggingFaceEndpoint(
+    repo_id="mistralai/Mistral-7B-Instruct-v0.3",
+    task="text-generation",
+    huggingfacehub_api_token=api_token)    )
 
     # prompt = hub.pull("rlm/rag-prompt")
 
