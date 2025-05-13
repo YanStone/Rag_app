@@ -35,6 +35,7 @@ api_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 
 def load_and_split(path):
+    print("load and split")
     loader = PyMuPDFLoader(path)
     documents = loader.load()
 
@@ -43,11 +44,13 @@ def load_and_split(path):
     return chunks
 
 def create_vectorstore(chunks):
+    print("create vectorstore")
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.from_documents(chunks, embeddings)
     return vectorstore
 
 def create_graph(vectorstore):
+    print("create graph")
     # retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
     # llm = Ollama(model="mistral")
     # qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
